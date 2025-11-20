@@ -1,0 +1,8 @@
+{
+  "name": "ultrascrape",
+  "description": "Targeted web article archiver with discovery + selective download",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jonathan Edwards"
+  }
+}

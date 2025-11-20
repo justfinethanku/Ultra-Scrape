@@ -1,0 +1,24 @@
+{
+  "name": "ultrascrape-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Targeted web article fetcher for Claude Code /ultrascrape command",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/justfinethanku/Ultra-Scrape.git"
+  },
+  "scripts": {
+    "discovery": "node scripts/discovery-engine.js",
+    "download": "node scripts/download-engine.js"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.5.0",
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "fast-xml-parser": "^4.3.6",
+    "jsdom": "^24.0.0",
+    "mime-types": "^2.1.35",
+    "turndown": "^7.2.0"
+  }
+}
