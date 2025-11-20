@@ -1,0 +1,14 @@
+{
+  "name": "ultrascrape-marketplace",
+  "owner": {
+    "name": "Jonathan Edwards",
+    "url": "https://github.com/justfinethanku"
+  },
+  "plugins": [
+    {
+      "name": "ultrascrape",
+      "source": "./",
+      "description": "Targeted web article archiver with discovery + selective download"
+    }
+  ]
+}

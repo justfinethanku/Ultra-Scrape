@@ -19,16 +19,19 @@
 **Copy and paste this prompt to Claude Code:**
 
 ```
-Hey Claude, install UltraScrape from https://github.com/justfinethanku/Ultra-Scrape.git. Put it in ~/.claude-code/plugins/ultrascrape-plugin, run npm install, and refresh the command list.
+Hey Claude, add the UltraScrape marketplace from https://github.com/justfinethanku/Ultra-Scrape.git into ~/.claude/plugins/marketplaces/ultrascrape-marketplace, run npm install there, then restart Claude Code so the /ultrascrape:ultrascrape command is available.
 ```
 
 Or install manually:
 
 ```bash
-cd ~/.claude-code/plugins
-git clone https://github.com/justfinethanku/Ultra-Scrape.git ultrascrape-plugin
-cd ultrascrape-plugin
+# clone as a marketplace (Claude Code looks here)
+cd ~/.claude/plugins/marketplaces
+git clone https://github.com/justfinethanku/Ultra-Scrape.git ultrascrape-marketplace
+cd ultrascrape-marketplace
 npm install
+
+# restart Claude Code so it detects the marketplace + command
 ```
 
 > Commands are namespaced. Use `/ultrascrape:ultrascrape ...` inside Claude Code.
