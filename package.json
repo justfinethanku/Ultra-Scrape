@@ -1,5 +1,5 @@
 {
-  "name": "ultrascrape-plugin",
+  "name": "ultrascrape",
   "version": "1.0.0",
   "type": "module",
   "description": "Targeted web article fetcher for Claude Code /ultrascrape command",
