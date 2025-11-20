@@ -1,5 +1,9 @@
 # UltraScrape: Targeted Web Article Archiver for Claude Code
 
+<div align="center">
+  <img src="./ultra-scrape-repo.png" alt="UltraScrape" width="100%">
+</div>
+
 ![Version](https://img.shields.io/badge/version-1.0.0-teal?style=for-the-badge)
 ![License](https://img.shields.io/badge/license-MIT-gold?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Claude_Code-Plugin-teal?style=for-the-badge)
