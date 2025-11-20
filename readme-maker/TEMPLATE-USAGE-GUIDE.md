@@ -53,10 +53,13 @@ Entire sections that may or may not apply to your project.
    - Format: "[Unique characteristic]: [what it does]"
    - Example: `DocuMate: Automated API Documentation That Actually Stays Updated`
 
-2. **Cover Image** (Optional)
-   - If you have a cover image: Replace `{{COVER_IMAGE_PATH}}` with your image filename
-   - If you don't: Delete the entire `<div align="center">` block
+2. **Hero Image** (Optional but Recommended)
+   - If you have a hero image: Replace `{{HERO_IMAGE_FILENAME}}` with your image filename
+   - Place image file in repository root
+   - If you don't have one: Delete the entire `<div align="center">` block
    - Recommended size: 1200x600px minimum
+   - File formats: PNG, JPG, or WebP
+   - Example: `ultra-scrape-repo.png`, `my-project-hero.jpg`
 
 3. **Badges**
    - Version: Your current release (e.g., `1.0.0`, `2.5.3`)
@@ -151,46 +154,86 @@ Good:
 
 ### Installation
 
-**What it is:** Multi-path onboarding for different user scenarios.
+**What it is:** Copy-paste friendly installation instructions for Claude Code users.
+
+**IMPORTANT:** Installation must come BEFORE Quick Start section since users need to install before they can use.
 
 **How to structure:**
 
-1. **Identify your user paths:**
-   - Fresh install vs upgrade
-   - Different package managers (npm, pip, cargo)
-   - Platform-specific (Mac, Linux, Windows)
-   - Installation methods (CLI, GUI, plugin marketplace)
-
-2. **For each path:**
-   ```markdown
-   ### 1. {{METHOD_NAME}} ({{SCENARIO}})
-
-   {{DESCRIPTION}}
-
-   ```text
-   {{COPY_PASTE_PROMPT}}
-   ```
-
-   ```bash
-   {{COMMAND}}
-   ```
-   ```
-
-3. **Write conversational prompts:**
-   - These should be copy-paste ready for AI assistants
-   - Include context: "Hey Claude, I'm setting up [TOOL] for the first time..."
-   - Include the actual commands in the prompt
+1. **Quick Setup (Primary Method):**
+   - Use a code block (not blockquote) for easy copy-paste
+   - Include the full GitHub repository URL in the prompt
+   - Specify where to clone and what command to run
+   - Template format:
+     ```
+     Hey Claude, install [PROJECT_NAME] from {{GITHUB_REPO_URL}} - clone it to {{TARGET_DIRECTORY}} and run {{INSTALL_COMMAND}}.
+     ```
    - Example:
-     ```text
-     Hey Claude, please install MyTool from npm and initialize it in this repo:
-     npm install -g mytool
-     mytool init
+     ```
+     Hey Claude, install UltraScrape from https://github.com/justfinethanku/Ultra-Scrape.git - clone it to the plugins directory as 'ultrascrape-plugin' and run npm install.
      ```
 
-4. **Initialization section:**
-   - Only include if post-install setup is needed
-   - Remove if install is one-step
-   - Explain what initialization does: "sets up config files", "scaffolds folder structure", etc.
+2. **Manual Installation (Fallback):**
+   - Provide full bash commands for users who prefer manual setup
+   - Include all steps: cd, git clone, install dependencies
+   - Example:
+     ```bash
+     cd ~/.claude-code/plugins
+     git clone https://github.com/username/repo.git project-name
+     cd project-name
+     npm install
+     ```
+
+3. **Verify Installation:**
+   - Give users a simple test prompt to confirm it works
+   - Use a code block for copy-paste
+   - Example:
+     ```
+     Claude, test [PROJECT_NAME] by {{VERIFICATION_TASK}}.
+     ```
+
+**Key Improvements:**
+- ✅ Code blocks instead of blockquotes (easier to copy)
+- ✅ GitHub URL included directly in prompt (Claude needs this)
+- ✅ Clear target directory specification
+- ✅ Verification step to confirm success
+
+### Quick Start
+
+**What it is:** Immediate demonstration of what users can do after installing.
+
+**IMPORTANT:** Quick Start comes AFTER Installation (users need to install first).
+
+**How to structure:**
+
+1. **First Prompt:**
+   - Give users a single, complete prompt they can copy-paste immediately
+   - Use a code block (not blockquote) for easy copying
+   - Template:
+     ```
+     Claude, use [PROJECT_NAME] to {{QUICK_START_TASK}}.
+     ```
+   - Example:
+     ```
+     Claude, use UltraScrape to discover articles from https://blog.example.com/feed.xml, then download the 5 most recent ones to ./my-articles
+     ```
+
+2. **Common Patterns Table:**
+   - Create a 2-column table: "What you want" | "Say this to Claude"
+   - Include 4-6 common use cases
+   - Use placeholders like [URL], [folder], [topic] in prompts
+   - Make prompts natural and conversational
+   - Example:
+     | What you want | Say this to Claude |
+     |---------------|-------------------|
+     | Discover available articles | "Use UltraScrape to discover articles from [URL]" |
+     | Download recent articles | "Download the 10 most recent articles from [URL] to [folder]" |
+
+**Why this matters:**
+- Shows immediate value
+- Teaches users the natural language interface
+- Provides copy-paste examples for common tasks
+- Reduces time to first success
 
 ### How It Works
 

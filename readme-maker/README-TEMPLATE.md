@@ -6,12 +6,15 @@ Example: "Ultra-Doc 2.0: Dual-Track Documentation for Humans & AI"
 -->
 
 <div align="center">
-  <img src="./{{COVER_IMAGE_PATH}}" alt="[PROJECT_NAME] Cover" width="100%">
+  <img src="./{{HERO_IMAGE_FILENAME}}" alt="[PROJECT_NAME]" width="100%">
 </div>
 
 <!--
-INSTRUCTIONS: Add your cover image. Use a full-width design that matches your brand.
-If you don't have a cover image, remove this section entirely.
+INSTRUCTIONS: Add your hero/cover image at the top for visual impact.
+- Use {{HERO_IMAGE_FILENAME}} like "my-project-hero.png" or "project-banner.jpg"
+- Image should be full-width and showcase your project
+- If you don't have a hero image, remove this section entirely
+- Place the actual image file in your repository root
 -->
 
 ![Version](https://img.shields.io/badge/version-{{VERSION}}-teal?style=for-the-badge)
@@ -120,57 +123,101 @@ Quantify when possible (percentages, time saved, etc.)
 ## 📦 Installation
 
 <!--
-INSTRUCTIONS: Provide multiple installation paths if your tool has different user types.
-Use conversational prompts that users can copy-paste directly.
-Each path should have: scenario description → copy-paste prompt → command
+INSTRUCTIONS: Installation should come BEFORE Quick Start since users need to install first.
+Provide clear copy-paste prompts for Claude Code users.
+For plugins/tools with repositories, include the GitHub URL in the prompt.
 -->
 
-### 1. {{INSTALL_METHOD_1_NAME}} ({{SCENARIO_1}})
+### Quick Setup
 
-{{INSTALL_METHOD_1_DESCRIPTION}}
+**Copy and paste this prompt to Claude Code:**
 
-```text
-{{COPY_PASTE_PROMPT_1}}
+```
+Hey Claude, install [PROJECT_NAME] from {{GITHUB_REPO_URL}} - clone it to {{TARGET_DIRECTORY}} and run {{INSTALL_COMMAND}}.
 ```
 
 <!--
-INSTRUCTIONS: Make prompts conversational and complete. Examples:
-- "Hey Claude, please install Ultra-Doc 2.0 from the marketplace..."
-- "Hey [AI], I need to set up [PROJECT_NAME] for the first time..."
+INSTRUCTIONS: Fill in the placeholders:
+- {{GITHUB_REPO_URL}}: Your GitHub repository URL (e.g., "https://github.com/username/repo.git")
+- {{TARGET_DIRECTORY}}: Where to install (e.g., "the plugins directory as 'my-plugin'", "~/tools/myproject")
+- {{INSTALL_COMMAND}}: Installation command (e.g., "npm install", "pip install -e .", "make install")
 
-Include the actual commands in the prompt so users can paste as-is.
+Example: "Hey Claude, install UltraScrape from https://github.com/justfinethanku/Ultra-Scrape.git - clone it to the plugins directory as 'ultrascrape-plugin' and run npm install."
 -->
 
-```bash
-{{INSTALL_COMMAND_1}}
-```
-
-### 2. {{INSTALL_METHOD_2_NAME}} ({{SCENARIO_2}})
-
-<!-- [OPTIONAL] Include if you have upgrade/migration paths -->
-
-{{INSTALL_METHOD_2_DESCRIPTION}}
-
-```text
-{{COPY_PASTE_PROMPT_2}}
-```
+Or install manually:
 
 ```bash
-{{INSTALL_COMMAND_2}}
+{{MANUAL_INSTALL_COMMANDS}}
 ```
-
-### 3. Initialize
 
 <!--
-INSTRUCTIONS: If your tool needs post-install setup, add it here.
-If installation is one-step, remove this subsection.
+INSTRUCTIONS: Provide the full manual installation commands. Example:
+cd ~/.claude-code/plugins
+git clone https://github.com/username/repo.git project-name
+cd project-name
+npm install
 -->
 
-Run the command to {{WHAT_INITIALIZATION_DOES}}:
+### Verify Installation
 
-```bash
-{{INIT_COMMAND}}
+**Ask Claude:**
+
 ```
+Claude, test [PROJECT_NAME] by {{VERIFICATION_TASK}}.
+```
+
+<!--
+INSTRUCTIONS: Provide a simple verification task. Examples:
+- "discovering articles from https://example.com/feed.xml"
+- "running the hello world example"
+- "checking the version"
+-->
+
+---
+
+## ⚡ Quick Start
+
+<!--
+INSTRUCTIONS: Quick Start comes AFTER Installation.
+Provide copy-paste prompts that demonstrate the most common use case.
+Show what users can do immediately after installing.
+-->
+
+**Just installed? Copy and paste this prompt:**
+
+```
+Claude, use [PROJECT_NAME] to {{QUICK_START_TASK}}.
+```
+
+<!--
+INSTRUCTIONS: Fill in {{QUICK_START_TASK}} with a simple, achievable first task. Examples:
+- "discover articles from https://blog.example.com/feed.xml, then download the 5 most recent ones to ./my-articles"
+- "analyze the current codebase and generate documentation"
+- "run a hello world example"
+-->
+
+**Common patterns:**
+
+| What you want | Say this to Claude |
+|---------------|-------------------|
+| {{USE_CASE_1}} | "{{PROMPT_1}}" |
+| {{USE_CASE_2}} | "{{PROMPT_2}}" |
+| {{USE_CASE_3}} | "{{PROMPT_3}}" |
+| {{USE_CASE_4}} | "{{PROMPT_4}}" |
+| {{USE_CASE_5}} | "{{PROMPT_5}}" |
+
+<!--
+INSTRUCTIONS: Create 4-6 common patterns showing natural language prompts.
+Each row should have:
+- What you want: Brief description of the goal
+- Say this to Claude: Actual copy-paste prompt with [URL], [folder], [topic] placeholders
+
+Examples:
+| Discover available articles | "Use UltraScrape to discover articles from [URL]" |
+| Download recent articles | "Download the 10 most recent articles from [URL] to [folder]" |
+| Filter by topic | "Fetch articles about [topic] from [URL]" |
+-->
 
 ---
 
