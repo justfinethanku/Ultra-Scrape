@@ -18,7 +18,7 @@
 
 **Tell Claude Code:**
 
-> "Hey Claude, install the UltraScrape plugin for me. Clone it to the plugins directory and run npm install."
+> "Hey Claude, install the UltraScrape plugin from https://github.com/justfinethanku/Ultra-Scrape.git - clone it to the plugins directory as 'ultrascrape-plugin' and run npm install."
 
 Or manually:
 
