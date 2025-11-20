@@ -12,6 +12,31 @@
 
 ---
 
+## 📦 Installation
+
+### Quick Setup
+
+**Tell Claude Code:**
+
+> "Hey Claude, install the UltraScrape plugin for me. Clone it to the plugins directory and run npm install."
+
+Or manually:
+
+```bash
+cd ~/.claude-code/plugins
+git clone https://github.com/justfinethanku/Ultra-Scrape.git ultrascrape-plugin
+cd ultrascrape-plugin
+npm install
+```
+
+### Verify Installation
+
+**Ask Claude:**
+
+> "Claude, test the UltraScrape plugin by discovering articles from https://example.com/feed.xml"
+
+---
+
 ## ⚡ Quick Start
 
 **Just installed? Try this prompt:**
@@ -64,31 +89,6 @@ Traditional CLI tools make you memorize flags like `--filters '{"dateRange":{"st
 - 🛡️ **Built-in Safeguards**: User agent identification, configurable limits, delay mechanisms
 - 🔄 **Structured Output**: Domain-organized directories with manifest files for easy navigation
 - 📊 **Progress Tracking**: Real-time console feedback during discovery and download phases
-
----
-
-## 📦 Installation
-
-### Quick Start
-
-**Tell Claude Code:**
-
-> "Hey Claude, install the UltraScrape plugin for me. Clone it to the plugins directory and run npm install."
-
-Or manually:
-
-```bash
-cd ~/.claude-code/plugins
-git clone https://github.com/justfinethanku/Ultra-Scrape.git ultrascrape-plugin
-cd ultrascrape-plugin
-npm install
-```
-
-### Verify Installation
-
-**Ask Claude:**
-
-> "Claude, test the UltraScrape plugin by discovering articles from https://example.com/feed.xml"
 
 ---
 
