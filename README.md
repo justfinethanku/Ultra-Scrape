@@ -19,7 +19,7 @@
 **Copy and paste this prompt to Claude Code:**
 
 ```
-Hey Claude, install UltraScrape from https://github.com/justfinethanku/Ultra-Scrape.git - clone it to the plugins directory as 'ultrascrape-plugin' and run npm install.
+Hey Claude, install UltraScrape from https://github.com/justfinethanku/Ultra-Scrape.git. Put it in ~/.claude-code/plugins/ultrascrape-plugin, run npm install, and refresh the command list.
 ```
 
 Or install manually:
@@ -31,29 +31,35 @@ cd ultrascrape-plugin
 npm install
 ```
 
+> Commands are namespaced. Use `/ultrascrape:ultrascrape ...` inside Claude Code.
+
 ### Verify Installation
 
 **Ask Claude:**
 
-> "Claude, test the UltraScrape plugin by discovering articles from https://example.com/feed.xml"
+> "List plugin commands and confirm you see /ultrascrape:ultrascrape"
+
+Then try a quick command:
+
+> `/ultrascrape:ultrascrape https://example.com/feed.xml --limit 3 --output ./ultra-test`
 
 ---
 
 ## ⚡ Quick Start
 
-**Just installed? Try this prompt:**
+**Just installed? Run the slash command:**
 
-> "Claude, use UltraScrape to discover articles from https://blog.example.com/feed.xml, then download the 5 most recent ones to ./my-articles"
+> `/ultrascrape:ultrascrape https://blog.example.com/feed.xml --limit 5 --output ./my-articles`
 
 **Common patterns:**
 
 | What you want | Say this to Claude |
 |---------------|-------------------|
-| Discover available articles | "Use UltraScrape to discover articles from [URL]" |
-| Download recent articles | "Download the 10 most recent articles from [URL] to [folder]" |
-| Filter by topic | "Fetch articles about [topic] from [URL]" |
-| Archive a blog | "Archive all articles from [URL] with 2 second delays" |
-| Build a dataset | "Download 100 articles from [URL] without media to [folder]" |
+| Discover available articles | "Run `/ultrascrape:ultrascrape [URL] --limit 50` and show me what you found before downloading" |
+| Download recent articles | "`/ultrascrape:ultrascrape [URL] --limit 10 --output [folder]`" |
+| Filter by topic | "`/ultrascrape:ultrascrape [URL] --filters '{\"tags\":[\"[topic]\"]}'`" |
+| Archive a blog | "`/ultrascrape:ultrascrape [URL] --delay 2000 --output ./archive`" |
+| Build a dataset | "`/ultrascrape:ultrascrape [URL] --filters '{\"limit\":100}' --no-media --output [folder]`" |
 
 ---
 
@@ -149,7 +155,7 @@ The download engine:
 
 ## 🛠️ Usage
 
-Just talk to Claude Code naturally! Here are example prompts you can use:
+Use the namespaced slash command inside Claude Code: `/ultrascrape:ultrascrape`. Claude will ask you for the URL, output folder, limits, delay, and media preference—no flags to remember. The prompts below are phrased conversationally; just ask Claude to run the command and answer its questions.
 
 ### Basic Discovery
 
@@ -345,17 +351,12 @@ UltraScrape is designed with respectful web practices in mind:
 
 ### Integration with Claude Code Slash Command
 
-**Ask Claude:**
-> "Create a slash command /ultrascrape that:
-> 1. Discovers articles from a URL
-> 2. Asks me for filtering preferences
-> 3. Downloads the filtered articles
-> 4. Reports what was saved and where"
+The plugin already ships a namespaced command. Invoke it directly:
+```
+/ultrascrape:ultrascrape https://blog.example.com/feed.xml --limit 5 --output ./my-articles
+```
 
-This creates `.claude/commands/ultrascrape.md` that you can then invoke with:
-```
-/ultrascrape https://blog.example.com/feed.xml
-```
+If you want a project-local alias, ask Claude to create a wrapper `/ultrascrape` in `.claude/commands/` that forwards to `/ultrascrape:ultrascrape` with your preferred defaults.
 
 ---
 
