@@ -89,12 +89,17 @@ function normalizeRss(items, baseUrl) {
 function normalizeAtom(entries, baseUrl) {
   const list = Array.isArray(entries) ? entries : [entries];
   return list.map((entry) => {
-    const link =
-      (Array.isArray(entry.link)
-        ? entry.link.find((l) => l['@_href'])?.['@_href']
-        : entry.link?.['@_href']) || entry.link || '';
+    const links = Array.isArray(entry.link) ? entry.link : [entry.link];
+    // Atom self/enclosure links can be XML or media. Archive only an HTML
+    // alternate; RFC 4287 defines an omitted relation as "alternate".
+    const link = links.find((candidate) => {
+      if (!candidate?.['@_href']) return false;
+      const relation = candidate['@_rel'] || 'alternate';
+      const type = (candidate['@_type'] || '').split(';')[0].trim().toLowerCase();
+      return relation === 'alternate' && (!type || type === 'text/html' || type === 'application/xhtml+xml');
+    });
     return {
-      url: resolveUrl(link, baseUrl),
+      url: link ? resolveUrl(link['@_href'], baseUrl) : null,
       title: safeString(entry.title) || '(untitled)',
       date: entry.updated || entry.published || null,
       tags: normalizeTags(entry.category),
@@ -106,11 +111,8 @@ function normalizeAtom(entries, baseUrl) {
 
 function normalizeTags(value) {
   if (!value) return [];
-  if (Array.isArray(value)) {
-    return value.map((v) => (typeof v === 'string' ? v : v['@_term'] || v['#text'])).filter(Boolean);
-  }
-  if (typeof value === 'string') return [value];
-  return [];
+  const values = Array.isArray(value) ? value : [value];
+  return values.map((v) => safeString(typeof v === 'object' ? v?.['@_term'] ?? v?.['#text'] : v)).filter(Boolean);
 }
 
 function findFeedLink(html, baseUrl) {
@@ -152,7 +154,7 @@ function resolveUrl(possiblyRelative, baseUrl) {
 
 function truncate(str, len = 240) {
   if (!str) return null;
-  const clean = str.replace(/[ \\t\\n\\r]+/g, ' ').trim();
+  const clean = safeString(str).replace(/\s+/g, ' ').trim();
   return clean.length > len ? `${clean.slice(0, len)}…` : clean;
 }
 
