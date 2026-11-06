@@ -1,11 +1,9 @@
-import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
 import * as cheerio from 'cheerio';
 import { URL } from 'url';
+import { fetchResource, validateUrl } from './http.js';
 
 const DEFAULT_LIMIT = 50;
-const UA =
-  'UltraScrape/1.0 (+https://github.com/justfinethanku/Ultra-Scrape; respectful, 1rps default)';
 
 export async function discover(targetUrl, options = {}) {
   const url = validateUrl(targetUrl);
@@ -49,26 +47,8 @@ export async function discover(targetUrl, options = {}) {
 
 // ---- helpers ----
 
-function validateUrl(value) {
-  try {
-    const u = new URL(value);
-    if (!['http:', 'https:'].includes(u.protocol)) {
-      throw new Error('URL must start with http:// or https://');
-    }
-    return u.toString();
-  } catch (err) {
-    throw new Error(`Invalid URL: ${err.message}`);
-  }
-}
-
 async function fetchText(url) {
-  const resp = await axios.get(url, {
-    headers: { 'User-Agent': UA },
-    timeout: 15000,
-    maxRedirects: 5,
-    responseType: 'text',
-    validateStatus: (s) => s >= 200 && s < 400
-  });
+  const resp = await fetchResource(url);
   return resp.data;
 }
 
@@ -164,9 +144,9 @@ function extractPageMetadata(html, url) {
 
 function resolveUrl(possiblyRelative, baseUrl) {
   try {
-    return new URL(possiblyRelative, baseUrl).toString();
+    return validateUrl(possiblyRelative, baseUrl);
   } catch {
-    return possiblyRelative || '';
+    return null;
   }
 }
 

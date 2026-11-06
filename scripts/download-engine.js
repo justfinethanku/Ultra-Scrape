@@ -1,16 +1,14 @@
 import fs from 'fs/promises';
 import path from 'path';
-import axios from 'axios';
 import TurndownService from 'turndown';
 import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
 import { extension as mimeExtension } from 'mime-types';
 import { discover } from './discovery-engine.js';
+import { fetchResource, validateUrl } from './http.js';
 
 const DEFAULT_DELAY = 1000;
 const DEFAULT_LIMIT = 20;
-const UA =
-  'UltraScrape/1.0 (+https://github.com/justfinethanku/Ultra-Scrape; respectful, 1rps default)';
 
 export async function download(targetUrl, options = {}) {
   const url = validateUrl(targetUrl);
@@ -61,26 +59,8 @@ export async function download(targetUrl, options = {}) {
 
 // ---- core helpers ----
 
-function validateUrl(value) {
-  try {
-    const u = new URL(value);
-    if (!['http:', 'https:'].includes(u.protocol)) {
-      throw new Error('URL must start with http:// or https://');
-    }
-    return u.toString();
-  } catch (err) {
-    throw new Error(`Invalid URL: ${err.message}`);
-  }
-}
-
 async function fetchHtml(url) {
-  const resp = await axios.get(url, {
-    headers: { 'User-Agent': UA },
-    timeout: 20000,
-    maxRedirects: 5,
-    responseType: 'text',
-    validateStatus: (s) => s >= 200 && s < 400
-  });
+  const resp = await fetchResource(url);
   if (!resp.data) throw new Error('Empty response body');
   return resp.data;
 }
@@ -177,7 +157,7 @@ function collectImages(doc, baseUrl) {
     }
     if (!candidate) continue;
     try {
-      urls.push(new URL(candidate, baseUrl).toString());
+      urls.push(validateUrl(candidate, baseUrl));
     } catch {
       // ignore bad URL
     }
@@ -189,12 +169,7 @@ async function downloadImages(imageUrls, pageUrl) {
   const media = [];
   for (const [index, url] of imageUrls.entries()) {
     try {
-      const resp = await axios.get(url, {
-        responseType: 'arraybuffer',
-        timeout: 20000,
-        headers: { 'User-Agent': UA, Referer: pageUrl },
-        validateStatus: (s) => s >= 200 && s < 400
-      });
+      const resp = await fetchResource(url, { binary: true, referer: pageUrl });
       const contentType = resp.headers['content-type'];
       const extFromMime = mimeExtension(contentType || '') || '';
       const urlPathExt = (() => {
@@ -257,7 +232,9 @@ function safeResolve(candidate, baseUrl) {
 async function persist(post, payload, outputDir, format) {
   const base = path.resolve(outputDir);
   const domain = new URL(post.url).hostname.replace(/[^a-z0-9.-]/gi, '-');
-  const datePart = (post.date || '').slice(0, 10) || 'undated';
+  // Feed metadata is untrusted: never interpolate raw dates into a path.
+  const date = typeof post.date === 'string' && post.date.trim() ? new Date(post.date) : null;
+  const datePart = date && Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : 'undated';
   const slug = slugify(post.title || 'untitled');
   const dir = path.join(base, domain, `${datePart}-${slug}`);
   await fs.mkdir(path.join(dir, 'media'), { recursive: true });
