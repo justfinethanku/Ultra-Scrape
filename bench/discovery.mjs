@@ -9,6 +9,10 @@ import { performance } from 'node:perf_hooks';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { discover } from '../scripts/discovery-engine.js';
+import { mock } from 'node:test';
+import { installPublicNetwork } from '../testing/public-network.js';
+
+installPublicNetwork(mock);
 
 if (!process.argv[2]) throw new Error('Supply a baseline discovery module path');
 const baseline = (await import(pathToFileURL(path.resolve(process.argv[2])).href)).discover;
@@ -35,7 +39,7 @@ const server = createServer((req, res) => {
   res.end(pages[req.url]);
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-const origin = `http://127.0.0.1:${server.address().port}`;
+const origin = `http://fixture.test:${server.address().port}`;
 const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 const report = { node: process.version, arch: process.arch, warmups, samples, results: [] };
 try {
@@ -71,4 +75,5 @@ try {
   process.stdout.write(JSON.stringify(report, null, 2) + '\n');
 } finally {
   await new Promise((resolve) => server.close(resolve));
+  mock.restoreAll();
 }

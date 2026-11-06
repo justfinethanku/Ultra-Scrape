@@ -4,6 +4,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
+import { installPublicNetwork } from '../testing/public-network.js';
 import { discover } from '../scripts/discovery-engine.js';
 import { download } from '../scripts/download-engine.js';
 
@@ -19,6 +20,7 @@ const rss = (items) => `<rss><channel>${items.map(({ title, url, date, tag }) =>
 
 async function fixture(t, routes) {
   const requests = [];
+  installPublicNetwork(t.mock);
   const server = createServer((req, res) => {
     requests.push(req.url);
     const route = routes[req.url];
@@ -31,7 +33,7 @@ async function fixture(t, routes) {
   t.after(() => new Promise((resolve) => server.close(resolve)));
   const output = await mkdtemp(path.join(os.tmpdir(), 'ultrascrape-behavior-'));
   t.after(() => rm(output, { recursive: true, force: true }));
-  return { origin: `http://127.0.0.1:${server.address().port}`, output, requests };
+  return { origin: `http://fixture.test:${server.address().port}`, output, requests };
 }
 
 // RFC 4287 sections 4.2.7.2/4.2.7.3: absent rel means alternate;
@@ -139,7 +141,7 @@ test('a failed article is reported while later articles still reach the manifest
   assert.deepEqual(result.results.map(({ status }) => status), ['success', 'failed', 'success']);
   assert.match(result.results[1].error, /404/);
   assert.deepEqual(requests, ['/feed', '/first', '/missing', '/last']);
-  const manifest = JSON.parse(await readFile(path.join(output, '127.0.0.1', 'index.json'), 'utf8'));
+  const manifest = JSON.parse(await readFile(path.join(output, 'fixture.test', 'index.json'), 'utf8'));
   assert.deepEqual(manifest.items.map(({ url }) => url), [`${origin}/first`, `${origin}/last`]);
   assert.match(await readFile(path.join(result.results[2].path, 'index.md'), 'utf8'), /local article/);
 });

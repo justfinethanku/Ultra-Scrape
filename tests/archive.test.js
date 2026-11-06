@@ -4,9 +4,11 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
+import { installPublicNetwork } from '../testing/public-network.js';
 import { download } from '../scripts/download-engine.js';
 
 test('download produces line-delimited Markdown frontmatter with lossless metadata', async (t) => {
+  installPublicNetwork(t.mock);
   const author = 'A "quoted" author \\ notes\nsecond line';
   const tags = ['research', 'C:\\notes', 'line\nbreak'];
   const article = '<html><title>Archive fixture</title><article><p>' +
@@ -24,7 +26,7 @@ test('download produces line-delimited Markdown frontmatter with lossless metada
   t.after(() => new Promise((resolve) => server.close(resolve)));
   const output = await mkdtemp(path.join(os.tmpdir(), 'ultrascrape-archive-'));
   t.after(() => rm(output, { recursive: true, force: true }));
-  const origin = `http://127.0.0.1:${server.address().port}`;
+  const origin = `http://fixture.test:${server.address().port}`;
   const result = await download(`${origin}/feed`, { output, delay: 0, noMedia: true });
   assert.deepEqual(result.summary, { attempted: 1, succeeded: 1 });
   const dir = result.results[0].path;
@@ -44,7 +46,7 @@ test('download produces line-delimited Markdown frontmatter with lossless metada
   const metadata = JSON.parse(await readFile(path.join(dir, 'metadata.json'), 'utf8'));
   assert.equal(metadata.author, author);
   assert.deepEqual(metadata.tags, tags);
-  const manifest = JSON.parse(await readFile(path.join(output, '127.0.0.1', 'index.json'), 'utf8'));
+  const manifest = JSON.parse(await readFile(path.join(output, 'fixture.test', 'index.json'), 'utf8'));
   assert.equal(manifest.items[0].path, dir);
   assert.equal(manifest.items[0].url, metadata.url);
 });

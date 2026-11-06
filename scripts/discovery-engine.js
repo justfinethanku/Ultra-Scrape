@@ -8,7 +8,7 @@ const DEFAULT_LIMIT = 50;
 export async function discover(targetUrl, options = {}) {
   const url = validateUrl(targetUrl);
   const limit = options.limit || DEFAULT_LIMIT;
-  const html = await fetchText(url);
+  const html = await fetchText(url, { allowPrivateNetwork: options.allowPrivateNetwork });
 
   // 1) If body is a feed, parse directly
   if (looksLikeFeed(html)) {
@@ -50,8 +50,8 @@ export async function discover(targetUrl, options = {}) {
 
 // ---- helpers ----
 
-async function fetchText(url) {
-  const resp = await fetchResource(url);
+async function fetchText(url, options) {
+  const resp = await fetchResource(url, options);
   return resp.data;
 }
 
@@ -196,6 +196,7 @@ function parseArgs(argv) {
   const opts = { limit: DEFAULT_LIMIT };
   for (let i = 0; i < rest.length; i++) {
     const arg = rest[i];
+    if (arg === '--allow-private-network') opts.allowPrivateNetwork = true;
     if (arg === '--limit') {
       opts.limit = parseInt(rest[i + 1], 10) || DEFAULT_LIMIT;
       i++;

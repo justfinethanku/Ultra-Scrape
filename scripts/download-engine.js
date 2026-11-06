@@ -23,7 +23,9 @@ export async function download(targetUrl, options = {}) {
     throw new Error(`Unsupported format: ${format}. Only markdown (aka Mike Dion files) is supported right now.`);
   }
 
-  const discovery = await discover(url, { limit: options.discoveryLimit || 50 });
+  const discovery = await discover(url, {
+    limit: options.discoveryLimit || 50, allowPrivateNetwork: options.allowPrivateNetwork
+  });
   const posts = applyFilters(discovery.posts, filters, limit);
 
   logProgress(`Prepared ${posts.length} items for download (limit ${limit})`);
@@ -34,7 +36,12 @@ export async function download(targetUrl, options = {}) {
     await sleep(delay);
     logProgress(`[${i + 1}/${posts.length}] ${post.title}`);
     try {
-      const html = await fetchHtml(post.url);
+      // Only the single-page fallback represents the user-named source itself.
+      // Feed entries (even on the same host) and media never inherit the opt-in.
+      const html = await fetchHtml(post.url, {
+        allowPrivateNetwork: options.allowPrivateNetwork === true &&
+          discovery.summary.discoveryMethod === 'single-page' && post.url === url
+      });
       const { markdown, metadata, mediaFiles, html: cleanedHtml } = await processHtml(
         html,
         post,
@@ -59,8 +66,8 @@ export async function download(targetUrl, options = {}) {
 
 // ---- core helpers ----
 
-async function fetchHtml(url) {
-  const resp = await fetchResource(url);
+async function fetchHtml(url, options) {
+  const resp = await fetchResource(url, options);
   if (!resp.data) throw new Error('Empty response body');
   return resp.data;
 }
@@ -253,6 +260,9 @@ function parseArgs(argv) {
         break;
       case '--output':
         opts.output = rest[++i] || 'output';
+        break;
+      case '--allow-private-network':
+        opts.allowPrivateNetwork = true;
         break;
       case '--no-media':
         opts.noMedia = true;
