@@ -16,8 +16,11 @@ export async function discover(targetUrl, options = {}) {
     return buildDiscovery(feed, { source: 'direct-feed', limit });
   }
 
+  // Parse HTML once: the single-page fallback reuses this document after
+  // feed-link lookup, including when fetching a linked feed fails.
+  const $ = cheerio.load(html || '');
   // 2) Try to find linked feeds
-  const feedLink = findFeedLink(html, url);
+  const feedLink = findFeedLink($, url);
   if (feedLink) {
     try {
       const feedHtml = await fetchText(feedLink);
@@ -31,7 +34,7 @@ export async function discover(targetUrl, options = {}) {
   }
 
   // 3) Fallback: treat as single page target
-  const meta = extractPageMetadata(html, url);
+  const meta = extractPageMetadata($, url);
   return {
     summary: {
       domain: new URL(url).hostname,
@@ -115,16 +118,14 @@ function normalizeTags(value) {
   return values.map((v) => safeString(typeof v === 'object' ? v?.['@_term'] ?? v?.['#text'] : v)).filter(Boolean);
 }
 
-function findFeedLink(html, baseUrl) {
-  const $ = cheerio.load(html || '');
+function findFeedLink($, baseUrl) {
   const candidates = $('link[type="application/rss+xml"], link[type="application/atom+xml"]');
   if (candidates.length === 0) return null;
   const href = candidates.first().attr('href');
   return href ? resolveUrl(href, baseUrl) : null;
 }
 
-function extractPageMetadata(html, url) {
-  const $ = cheerio.load(html || '');
+function extractPageMetadata($, url) {
   const title =
     $('meta[property="og:title"]').attr('content') ||
     $('title').text() ||
