@@ -16,10 +16,15 @@
 
 ### Quick Setup
 
+Install Node.js 20.18.1 or later and npm 9 or later before continuing. Dependencies are
+installed from `package-lock.json` with `npm ci`; `node_modules/` is generated
+locally and is not included in Git. Run `npm ci` in the plugin root after each
+update, before restarting Claude Code.
+
 **Copy and paste this prompt to Claude Code:**
 
 ```
-Hey Claude, add the UltraScrape marketplace from https://github.com/justfinethanku/Ultra-Scrape.git into ~/.claude/plugins/marketplaces/ultrascrape-marketplace, run npm install there, then restart Claude Code so the /ultrascrape:ultrascrape command is available.
+Hey Claude, add the UltraScrape marketplace from https://github.com/justfinethanku/Ultra-Scrape.git into ~/.claude/plugins/marketplaces/ultrascrape-marketplace, run npm ci there, then restart Claude Code so the /ultrascrape:ultrascrape command is available.
 ```
 
 Or install manually:
@@ -29,7 +34,7 @@ Or install manually:
 cd ~/.claude/plugins/marketplaces
 git clone https://github.com/justfinethanku/Ultra-Scrape.git ultrascrape-marketplace
 cd ultrascrape-marketplace
-npm install
+npm ci
 
 # restart Claude Code so it detects the marketplace + command
 ```
@@ -385,10 +390,13 @@ Or manually:
 ```bash
 git clone https://github.com/justfinethanku/Ultra-Scrape.git
 cd Ultra-Scrape
-npm install
-npm run discovery -- https://example.com/feed.xml  # Test discovery
-npm run download -- https://example.com/feed.xml --filters '{"limit":2}' --output ./test  # Test download
+npm ci
+node test/offline-smoke.mjs  # Verify both engines against localhost fixtures
 ```
+
+The offline check covers RSS, Atom, linked feeds, single-page discovery, filters,
+Markdown archives, and media handling without requesting live websites. It
+creates temporary output and removes it when finished.
 
 ---
 
