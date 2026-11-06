@@ -12,7 +12,16 @@ description: Discover and download targeted web articles to Markdown via the Ult
 
 ## How to run
 1. Require a valid http(s) URL.
-2. Use `askquestions` to gather: URL, output dir (default `./output`), limit (default 20), delay ms (default 1000), download media yes/no (default yes), optional tags/keywords, optional start/end dates.
-3. Invoke the plugin slash command (namespaced): `/ultrascrape:ultrascrape` with the collected values; no flags need to be remembered. Build `--filters` JSON from the answers.
+2. Ask only for missing inputs using available tools or conversation: URL, output dir (default `./output`), limit (default 20), delay ms (default 1000), download media yes/no (default yes), optional exact tags and start/end dates. Resolve output against the user's working directory before changing directories.
+3. Follow [the command procedure](../../commands/ultrascrape.md) for `/ultrascrape:ultrascrape`. Build `--filters` JSON from the answers. Use a double-quoted shell variable for that JSON; do not pass a literal `$FILTERS_JSON`.
 4. Summarize discovery results (counts/date range), confirm what to download, then run with the confirmed filters and be polite (increase delay on 429/403).
 5. Report saved paths, successes/failures, and remind that JS-only sites may need direct article URLs.
+
+Downloads consider at most the first 50 discovered feed entries and preserve
+feed order. Tags are exact case-insensitive matches; keyword/title search is
+not implemented. Use an explicit URL filter after inspecting discovery when
+needed. Delays apply before article requests, not every network request.
+Check result JSON for failures even on exit 0. See the
+[README](../../README.md) for setup, CLI options, and archive limitations.
+Private sources need explicit source-only `--allow-private-network`; extracted
+links, media, and redirect hops stay subject to public-destination validation.

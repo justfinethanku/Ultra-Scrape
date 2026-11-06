@@ -8,48 +8,53 @@
 ![License](https://img.shields.io/badge/license-MIT-gold?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Claude_Code-Plugin-teal?style=for-the-badge)
 
-**The first respectful, targeted web article fetcher: Discover via RSS/HTML, download only what you need, converted to clean Markdown with local media. Stays polite, automatically.**
+Discover articles via RSS, Atom, or static HTML, then save selected articles as Markdown with metadata and optional local images.
 
 ---
 
 ## 📦 Installation
 
-### Quick Setup
+### Set up a local checkout
 
-Install Node.js 20.18.1 or later and npm 9 or later before continuing. Dependencies are
-installed from `package-lock.json` with `npm ci`; `node_modules/` is generated
-locally and is not included in Git. Run `npm ci` in the plugin root after each
-update, before restarting Claude Code.
+Install Git, Node.js 20.18.1 or later, and npm 9 or later. Claude Code is
+required only for the slash command; the Node.js engines run independently.
+Dependency installation and offline checks were exercised on Linux with
+Node.js 22.22.2 and npm 10.9.7. Claude Code 2.1.318 recognizes the loading
+option below and validates the plugin manifest.
 
-**Copy and paste this prompt to Claude Code:**
+1. Clone into a directory you own and install the locked dependencies:
 
-```
-Hey Claude, add the UltraScrape marketplace from https://github.com/justfinethanku/Ultra-Scrape.git into ~/.claude/plugins/marketplaces/ultrascrape-marketplace, run npm ci there, then restart Claude Code so the /ultrascrape:ultrascrape command is available.
-```
+   ```bash
+   git clone https://github.com/justfinethanku/Ultra-Scrape.git
+   cd Ultra-Scrape
+   npm ci
+   ```
 
-Or install manually:
+2. Verify both engines without contacting a live website:
 
-```bash
-# clone as a marketplace (Claude Code looks here)
-cd ~/.claude/plugins/marketplaces
-git clone https://github.com/justfinethanku/Ultra-Scrape.git ultrascrape-marketplace
-cd ultrascrape-marketplace
-npm ci
+   ```bash
+   node test/offline-smoke.mjs
+   ```
 
-# restart Claude Code so it detects the marketplace + command
-```
+   Expect six `PASS` lines covering discovery and downloads with and without
+   media. The check starts a temporary loopback server and removes its output.
 
-> Commands are namespaced. Use `/ultrascrape:ultrascrape ...` inside Claude Code.
+3. Start Claude Code with this checkout loaded:
 
-### Verify Installation
+   ```bash
+   claude --plugin-dir "$(pwd)"
+   ```
 
-**Ask Claude:**
+   This loads the plugin for that session. Open `/help` and check for
+   `/ultrascrape:ultrascrape`. Repeat `--plugin-dir` for later sessions.
+   Merely cloning into `~/.claude/plugins/marketplaces/` does not install or
+   enable a plugin. See [Claude Code's plugin loading guide](https://code.claude.com/docs/en/plugins#make-an-installed-plugin-available-in-your-session).
 
-> "List plugin commands and confirm you see /ultrascrape:ultrascrape"
-
-Then try a quick command:
-
-> `/ultrascrape:ultrascrape https://example.com/feed.xml --limit 3 --output ./ultra-test`
+`node_modules/` is generated locally and is not included in Git. After updating
+your checkout with `git pull --ff-only`, run `npm ci` again and start a new
+Claude Code session with `--plugin-dir`. This checkout-based path keeps the
+installed dependencies beside the scripts; a marketplace's cached copy is a
+separate installation and needs its own dependencies.
 
 ---
 
@@ -57,17 +62,21 @@ Then try a quick command:
 
 **Just installed? Run the slash command:**
 
-> `/ultrascrape:ultrascrape https://blog.example.com/feed.xml --limit 5 --output ./my-articles`
+> `/ultrascrape:ultrascrape Discover articles at YOUR_FEED_URL, then download at most 5 to an absolute output directory I provide.`
+
+Replace `YOUR_FEED_URL` with a real RSS/Atom feed or static article URL. The
+example domains throughout this README are placeholders. The slash command
+collects inputs conversationally; the engine flags below are for direct Node.js use.
 
 **Common patterns:**
 
 | What you want | Say this to Claude |
 |---------------|-------------------|
 | Discover available articles | "Run `/ultrascrape:ultrascrape [URL] --limit 50` and show me what you found before downloading" |
-| Download recent articles | "`/ultrascrape:ultrascrape [URL] --limit 10 --output [folder]`" |
+| Download the first articles in feed order | "`/ultrascrape:ultrascrape [URL] --limit 10 --output [folder]`" |
 | Filter by topic | "`/ultrascrape:ultrascrape [URL] --filters '{\"tags\":[\"[topic]\"]}'`" |
 | Archive a blog | "`/ultrascrape:ultrascrape [URL] --delay 2000 --output ./archive`" |
-| Build a dataset | "`/ultrascrape:ultrascrape [URL] --filters '{\"limit\":100}' --no-media --output [folder]`" |
+| Build a dataset | "Download up to 20 articles from [URL], without media, to [absolute folder]." |
 
 ---
 
@@ -76,12 +85,12 @@ Then try a quick command:
 UltraScrape is a Claude Code plugin that solves the "Bulk Scraping vs Targeted Retrieval" problem. Most web scrapers crawl everything indiscriminately, hammering servers and downloading content you don't need. UltraScrape takes a different approach.
 
 It maintains a two-phase workflow:
-1. **Discovery Engine**: Finds available articles via RSS feeds or HTML link discovery
-2. **Download Engine**: Selectively fetches only the articles you filtered, with rate limiting and polite defaults
+1. **Discovery Engine**: Reads RSS/Atom feeds, follows an HTML page's first linked feed, or treats the target as one article
+2. **Download Engine**: Fetches selected articles with a configurable delay before each article
 
 (Think of it as "window shopping before buying" - you browse the catalog first, then only download what matters. Your bandwidth and their servers both thank you.)
 
-When you run a discovery, UltraScrape analyzes feeds or page structure, then lets you filter by date, tags, or custom criteria before downloading. Each downloaded article becomes clean Markdown (we call them Mike Dion files around here - .md = Mike Dion, get it?) with extracted metadata, original HTML backup, and locally-stored media files.
+When you run discovery, UltraScrape reads feeds or page metadata, then lets you filter by date, tags, or explicit URLs before downloading. Each downloaded article becomes Markdown with extracted metadata, extracted HTML, and optional local images.
 
 ### Why Natural Language?
 
@@ -98,10 +107,10 @@ Traditional CLI tools make you memorize flags like `--filters '{"dateRange":{"st
 ### Key Features
 
 - 🔍 **Smart Discovery**: Automatically detects RSS/Atom feeds, linked feeds, or falls back to single-page extraction
-- 🎯 **Targeted Downloads**: Filter by date range, tags, or custom criteria before fetching
-- ⏱️ **Respectful Rate Limiting**: Default 1 request/second with configurable delays
+- 🎯 **Targeted Downloads**: Filter by date range, exact tags, or explicit URLs before fetching
+- ⏱️ **Article Delays**: Wait 1000 ms before each article fetch by default; discovery and image requests do not use this delay
 - 📝 **Clean Mike Dion Files**: Uses Mozilla Readability for article extraction, Turndown for Markdown conversion
-- 📦 **Complete Archives**: Saves Markdown, metadata JSON, original HTML, and media files per article
+- 📦 **Article Archives**: Saves Markdown, metadata JSON, extracted HTML, and optional images per article
 - 🛡️ **Built-in Safeguards**: User agent identification, configurable limits, delay mechanisms
 - 🔄 **Structured Output**: Domain-organized directories with manifest files for easy navigation
 - 📊 **Progress Tracking**: Real-time console feedback during discovery and download phases
@@ -152,11 +161,11 @@ graph TD
 
 The download engine:
 1. Takes discovery results and applies your filters (date range, tags, limit)
-2. Fetches each article HTML with configurable rate limiting
+2. Fetches each article HTML with a configurable delay before each article
 3. Uses Mozilla Readability to extract clean article content
 4. Converts to Markdown via Turndown
 5. Downloads images and media to local `media/` directory
-6. Saves complete archive: `index.md`, `metadata.json`, `original.html`
+6. Saves `index.md`, `metadata.json`, and extracted article HTML in `original.html`
 7. Updates domain manifest (`index.json`) for tracking
 
 ---
@@ -183,13 +192,13 @@ Use the namespaced slash command inside Claude Code: `/ultrascrape:ultrascrape`.
 
 ### Advanced Filtering
 
-> "Download only the 5 most recent articles from https://blog.example.com/feed.xml"
+> "Download the first 5 articles in feed order from https://blog.example.com/feed.xml"
 
 > "Fetch articles from https://blog.site/rss from 2024 only and save to ./2024-articles"
 
 > "Download articles tagged with 'ai' or 'machine-learning' from https://techblog.com/feed"
 
-> "Get the 10 most recent JavaScript articles from https://devblog.com/rss published after June 2024"
+> "Get the first 10 articles tagged JavaScript in feed order from https://devblog.com/rss published after June 2024"
 
 ### Rate Limiting & Politeness
 
@@ -212,16 +221,16 @@ Each downloaded article creates this structure:
 ```
 output/
 └── blog.example.com/
-    ├── index.json                    # Manifest of all articles from this domain
-    ├── article-title-slug/
+    ├── index.json                    # Appended entries for successful downloads
+    ├── 2024-01-15-article-title-slug/
     │   ├── index.md                  # Clean Markdown version
     │   ├── metadata.json             # Structured metadata (title, date, author, etc.)
-    │   ├── original.html             # Raw HTML backup
+    │   ├── original.html             # Extracted article HTML with rewritten image paths
     │   └── media/
     │       ├── image-001.jpg         # Downloaded images
     │       ├── image-002.png
     │       └── diagram.svg
-    └── another-article/
+    └── undated-another-article/
         ├── index.md
         ├── metadata.json
         ├── original.html
@@ -230,16 +239,22 @@ output/
 
 ### Markdown Output Format
 
+Paths use the article URL's hostname and the feed date (UTC `YYYY-MM-DD`),
+or `undated` for a missing/invalid date. Titles become lowercase ASCII slugs.
+Running again writes into the same date/title directory and appends another
+manifest entry; this is not an incremental backup or deduplication system.
+
 Each `index.md` (Mike Dion file) includes frontmatter:
 
 ```markdown
 ---
 title: "Article Title"
-url: "https://blog.example.com/article"
-date: "2024-01-15"
+source_url: "https://blog.example.com/article"
+published: "2024-01-15"
 author: "Author Name"
-tags: ["ai", "programming"]
-description: "Article summary..."
+tags:
+  - "ai"
+  - "programming"
 ---
 
 # Article Title
@@ -251,6 +266,12 @@ Clean article content in Markdown...
 
 ---
 
+The richer `metadata.json` also contains `url`, `date`, `excerpt`,
+`contentLength`, `saved_at`, and the absolute `output_dir`. Optional frontmatter
+fields are omitted when missing. `original.html`
+contains extracted HTML, not the original HTTP response body. With
+`--no-media`, the `media/` directory is empty and image URLs remain remote.
+
 ## ⚙️ What Claude Code Will Do
 
 When you give Claude a UltraScrape prompt, here's what happens behind the scenes:
@@ -259,7 +280,7 @@ When you give Claude a UltraScrape prompt, here's what happens behind the scenes
 2. **Runs discovery** to find available articles
 3. **Shows you what was found** (count, date range, topics)
 4. **Applies your filters** (date, tags, limit)
-5. **Downloads the articles** with proper rate limiting
+5. **Downloads the articles** with a delay before each article fetch
 6. **Converts to clean Markdown** with local media
 7. **Reports the results** and where files were saved
 
@@ -268,7 +289,7 @@ When you give Claude a UltraScrape prompt, here's what happens behind the scenes
 | What you ask for | Claude will use |
 |------------------|-----------------|
 | "Limit to 10 articles" | `--filters '{"limit":10}'` |
-| "From 2024 only" | `--filters '{"dateRange":{"start":"2024-01-01"}}'` |
+| "From 2024 only" | `--filters '{"dateRange":{"start":"2024-01-01T00:00:00Z","end":"2024-12-31T23:59:59.999Z"}}'` |
 | "Articles about AI" | `--filters '{"tags":["ai"]}'` |
 | "2 second delays" | `--delay 2000` |
 | "No images" or "text only" | `--no-media` |
@@ -301,14 +322,54 @@ the source. Embedded private media is skipped. In the JavaScript API, use
 
 ### Filter Options Reference
 
-You can combine multiple filters in your prompts:
+The downloader accepts these `--filters` JSON fields:
 
+| Field | Behavior |
+|-------|----------|
+| `dateRange.start`, `dateRange.end` | Inclusive date/time bounds; posts without a date remain eligible. Use explicit UTC timestamps for whole-day ranges. |
+| `tags` | Any exact, case-insensitive tag match; this does not search titles or article text. |
+| `urls` | Exact URL allowlist, useful after inspecting discovery results. |
+| `limit` | First N matching entries, also capped by the top-level `--limit`. |
+
+Entries stay in feed order; they are not sorted by publication date. The
+downloader rediscovers at most 50 feed entries before filtering, even if you
+set a higher download limit. A separate discovery command can inspect more,
+but its JSON is not an input file for the download CLI. There is no built-in
+keyword, title, author, or full-text filter; select URLs yourself when needed.
+
+### Run the engines directly
+
+Run these commands from the checkout root in a POSIX shell. Replace the URL
+and output path with your own values; the output path must be a writable directory.
+No Claude Code session is required.
+
+```bash
+URL='https://YOUR-SITE.example/feed.xml'
+OUTPUT="$PWD/my-articles"
+WORK_DIR=$(mktemp -d)
+node scripts/discovery-engine.js "$URL" --limit 50 > "$WORK_DIR/discovery.json"
 ```
-Date range: "from January 2024", "published after June 1st", "from 2024 only"
-Tags: "about JavaScript", "tagged with AI", "related to tutorials"
-Limit: "only 5 articles", "up to 20 posts", "first 10 items"
-Search: "containing the word 'async'", "with 'TypeScript' in the title"
+
+Inspect `discovery.json` before downloading. To download at most five articles
+tagged `ai` from 2024 without images, run:
+
+```bash
+FILTERS_JSON='{"tags":["ai"],"dateRange":{"start":"2024-01-01T00:00:00Z","end":"2024-12-31T23:59:59.999Z"},"limit":5}'
+node scripts/download-engine.js "$URL" --filters "$FILTERS_JSON" --limit 5 --delay 1000 --no-media --output "$OUTPUT" > "$WORK_DIR/download.json"
 ```
+
+Discovery accepts `--limit` (default 50). Download accepts `--limit` (default
+20), `--delay` in milliseconds (default 1000), `--output` (default `./output`),
+`--filters` (JSON), `--no-media`, `--allow-private-network` (source only; see
+[private network sources](#private-network-sources)), and `--format markdown`
+(the only format). Discovery also accepts `--allow-private-network`.
+Use positive integers for limits and delay; CLI zero values fall back to defaults.
+
+Both engines write JSON to stdout. Download progress and errors go to stderr.
+Check `summary.attempted`, `summary.succeeded`, and every result's `status` in
+`download.json`: per-article failures are recorded while the process can still
+exit 0. A discovery or argument error exits 1. Keep the JSON files for your
+records or remove the temporary directory when finished.
 
 ---
 
@@ -317,17 +378,20 @@ Search: "containing the word 'async'", "with 'TypeScript' in the title"
 ### Research Paper Collection
 
 **Prompt:**
-> "Claude, collect the 20 most recent ML papers from https://arxiv.org/list/cs.AI/recent published in 2024 and save them to ./ml-research"
+> "Discover an RSS/Atom feed of research article HTML pages, then save the first 20 matching articles to an absolute output directory."
+
+An HTML listing without a linked feed is treated as one page, not crawled for
+article links. PDF downloads and JavaScript rendering are not supported.
 
 ### Blog Archive for Offline Reading
 
 **Prompt:**
-> "Archive all tutorial and guide posts from https://myblog.com/feed.xml to ./tutorials. Be polite with 2 second delays."
+> "Download up to 20 posts tagged tutorial or guide from https://myblog.com/feed.xml to ./tutorials, with 2 second article delays."
 
 ### Content Analysis Dataset
 
 **Prompt:**
-> "Build a dataset from https://news.site/rss - download 100 articles without media files to ./news-corpus"
+> "Build a dataset from https://news.site/rss - download up to 20 articles without media files to an absolute output directory."
 
 ### Targeted Documentation Backup
 
@@ -347,10 +411,11 @@ UltraScrape is designed with respectful web practices in mind:
 
 ### Built-in Protections
 
-- **User Agent**: Identifies as `UltraScrape/0.1` with contact info
-- **Rate Limiting**: Default 1 request/second (1000ms delay)
+- **User Agent**: Identifies as `UltraScrape/1.0` with the repository URL
+- **Article delay**: Default 1000 ms before each article; there is no global requests-per-second limiter for discovery, redirects, or images
 - **Request Caps**: Default limit of 20 downloads per run
 - **Targeted Approach**: Discovery first, download second (no blind crawling)
+- **Request limits**: 20-second timeout, at most 5 redirects, 5 MiB decompressed HTML/feed responses and 10 MiB per image
 
 ### Your Responsibilities
 
@@ -366,7 +431,7 @@ UltraScrape is designed with respectful web practices in mind:
 - Bypass paywalls or authentication
 - Render JavaScript-heavy SPAs (use direct article URLs or RSS feeds)
 - Crawl entire domains (only fetches specified articles)
-- Ignore rate limits or retry after blocks
+- Automatically retry or back off after 429/403 responses
 
 ---
 
@@ -375,7 +440,7 @@ UltraScrape is designed with respectful web practices in mind:
 ### Custom User Agent
 
 **Ask Claude:**
-> "Claude, update the UltraScrape user agent to identify as 'MyBot/1.0' with my contact email in both discovery and download engines"
+> "Claude, update the shared user agent in scripts/http.js to identify as 'MyBot/1.0' with my contact email"
 
 ### Custom Filters
 
@@ -421,10 +486,29 @@ node test/offline-smoke.mjs # Run the offline CLI check alone
 node testing/item-247-probe.mjs # Verify the original SSRF fixture scenarios
 ```
 
-The offline check covers RSS, Atom, linked feeds, single-page discovery, filters,
-Markdown archives, and media handling without requesting live websites. It
-uses a mocked public DNS answer and redirects sockets only to its local test
-fixtures. It creates temporary output and removes it when finished.
+The full suite includes the offline smoke check plus feed behavior, archive,
+and security regressions. It uses temporary local fixtures without requesting
+live websites. The offline check supplies a mocked public DNS answer and
+routes sockets only to loopback fixtures. The test command bounds concurrency
+to two workers.
+
+### Troubleshoot setup and downloads
+
+| Symptom | Check |
+|---------|-------|
+| `ERR_MODULE_NOT_FOUND` or `Cannot find package` | Run `npm ci` from the checkout whose scripts you execute; loading a different cached plugin copy does not reuse these dependencies. |
+| Slash command missing | Start a new session with `claude --plugin-dir /absolute/path/to/Ultra-Scrape`; check `/help`. A clone alone does not enable it. |
+| `Invalid JSON for --filters` | Use single quotes around inline JSON, or double quotes around a shell variable: `--filters "$FILTERS_JSON"`. |
+| Zero attempted downloads | Inspect discovery results and exact tags/URLs; only the first 50 feed entries are considered by download. |
+| Process exits 0 but articles are missing | Inspect failed entries in result JSON and stderr; article failures do not change the exit code. |
+| 429/403 or timeout | Stop and inspect the response; increase article delays or reduce limits before a later run. There is no automatic retry/backoff. |
+| `Blocked non-public destination` | Public destinations are the default. For a trusted private article, explicitly opt in with `--allow-private-network` for that article URL; the flag does not grant access to feed entries, media, or redirects. |
+
+The audited lockfile still produces a moderate `npm audit` alert. The
+[dependency assessment in PR #2](https://github.com/justfinethanku/Ultra-Scrape/pull/2)
+records the XMLBuilder alert and its reachability assessment. Installation
+success does not mean the audit is clear; do not apply an unreviewed
+`npm audit fix --force` as a setup step.
 
 ---
 
@@ -450,7 +534,8 @@ fixtures. It creates temporary output and removes it when finished.
 
 ## 📄 License
 
-MIT License - See LICENSE file for details
+`package.json` declares the MIT license. This repository does not currently
+include a `LICENSE` file.
 
 ---
 
