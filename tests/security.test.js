@@ -5,18 +5,20 @@ import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
+import { installPublicNetwork } from '../testing/public-network.js';
 import { discover } from '../scripts/discovery-engine.js';
 import { download } from '../scripts/download-engine.js';
 
 const paragraph = '<p>An article with useful, readable text. '.repeat(30) + '</p>';
 
 async function fixture(t, handler) {
+  installPublicNetwork(t.mock);
   const server = createServer(handler);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise((resolve) => server.close(resolve)));
   const root = await mkdtemp(path.join(os.tmpdir(), 'ultrascrape-security-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  return { url: `http://127.0.0.1:${server.address().port}`, output: path.join(root, 'archive', 'output') };
+  return { url: `http://fixture.test:${server.address().port}`, output: path.join(root, 'archive', 'output') };
 }
 
 test('feed dates cannot write outside the requested archive', async (t) => {
@@ -29,7 +31,7 @@ test('feed dates cannot write outside the requested archive', async (t) => {
       });
       const result = await download(`${url}/feed`, { output, delay: 0, noMedia: true });
       assert.equal(result.summary.succeeded, 1);
-      const relative = path.relative(path.join(output, '127.0.0.1'), result.results[0].path);
+      const relative = path.relative(path.join(output, 'fixture.test'), result.results[0].path);
       assert.ok(!relative.startsWith('..') && !path.isAbsolute(relative), `archive escaped: ${relative}`);
       const expectedDate = date.startsWith('2026') || date.startsWith('Fri') ? '2026-11-06' : 'undated';
       assert.ok(relative.startsWith(`${expectedDate}-`), relative);

@@ -34,7 +34,7 @@ const server = createServer((req, res) => {
 });
 
 async function run(engine, ...args) {
-  const { stdout } = await exec(process.execPath, [`scripts/${engine}-engine.js`, ...args], {
+  const { stdout } = await exec(process.execPath, ['--import', './testing/preload-public-network.js', `scripts/${engine}-engine.js`, ...args], {
     cwd: root,
     timeout: 15000,
     env: { ...process.env, NO_PROXY: '127.0.0.1', no_proxy: '127.0.0.1' }
@@ -45,7 +45,7 @@ async function run(engine, ...args) {
 try {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
-  origin = `http://127.0.0.1:${server.address().port}`;
+  origin = `http://fixture.test:${server.address().port}`;
 
   for (const [route, method] of [['/feed.xml', 'direct-feed'], ['/atom.xml', 'direct-feed'], ['/linked', 'linked-feed'], ['/article', 'single-page']]) {
     const result = await run('discovery', origin + route, '--limit', '1');

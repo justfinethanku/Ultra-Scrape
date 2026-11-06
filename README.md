@@ -274,6 +274,31 @@ When you give Claude a UltraScrape prompt, here's what happens behind the scenes
 | "No images" or "text only" | `--no-media` |
 | "Save to ./my-folder" | `--output ./my-folder` |
 
+### Private network sources
+
+Outbound requests allow public HTTP(S) destinations by default. UltraScrape
+blocks loopback, private, CGNAT, link-local, unspecified, multicast, broadcast,
+and reserved addresses, including IPv6 and alternate IPv4 spellings. Every DNS
+answer is checked, the connection uses a checked address, and each redirect is
+checked again (up to five hops). Proxy environment variables are ignored so
+requests use the checked destination directly.
+
+To archive a private source you trust, pass `--allow-private-network` after its
+URL. Both CLI engines support this per-run flag:
+
+```bash
+node scripts/discovery-engine.js http://127.0.0.1:8080/article --allow-private-network
+node scripts/download-engine.js http://127.0.0.1:8080/article --allow-private-network --output ./archive
+```
+
+The flag allows only the exact source request you named, including fetching
+that same single page for its archive. It does not authorize linked feeds,
+feed entries, images, or redirects, even on the source's own host. To archive a
+private article listed by a feed, run the command with that article's URL as
+the source. Embedded private media is skipped. In the JavaScript API, use
+`discover(url, { allowPrivateNetwork: true })` or
+`download(url, { allowPrivateNetwork: true })` for the same behavior.
+
 ### Filter Options Reference
 
 You can combine multiple filters in your prompts:
@@ -391,12 +416,15 @@ Or manually:
 git clone https://github.com/justfinethanku/Ultra-Scrape.git
 cd Ultra-Scrape
 npm ci
-node test/offline-smoke.mjs  # Verify both engines against localhost fixtures
+npm test                   # Run all tests, including the offline CLI check
+node test/offline-smoke.mjs # Run the offline CLI check alone
+node testing/item-247-probe.mjs # Verify the original SSRF fixture scenarios
 ```
 
 The offline check covers RSS, Atom, linked feeds, single-page discovery, filters,
 Markdown archives, and media handling without requesting live websites. It
-creates temporary output and removes it when finished.
+uses a mocked public DNS answer and redirects sockets only to its local test
+fixtures. It creates temporary output and removes it when finished.
 
 ---
 
