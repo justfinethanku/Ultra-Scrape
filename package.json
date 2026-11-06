@@ -9,14 +9,15 @@
     "url": "https://github.com/justfinethanku/Ultra-Scrape.git"
   },
   "scripts": {
+    "test": "node --test --test-concurrency=2",
     "discovery": "node scripts/discovery-engine.js",
     "download": "node scripts/download-engine.js"
   },
   "dependencies": {
-    "@mozilla/readability": "^0.5.0",
+    "@mozilla/readability": "^0.6.0",
     "axios": "^1.6.8",
     "cheerio": "^1.0.0-rc.12",
-    "fast-xml-parser": "^4.3.6",
+    "fast-xml-parser": "^4.5.7",
     "jsdom": "^24.0.0",
     "mime-types": "^2.1.35",
     "turndown": "^7.2.0"
